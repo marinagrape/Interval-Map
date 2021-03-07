@@ -1,0 +1,172 @@
+#include <map>
+
+#include <iostream>
+template<typename K, typename V>
+class interval_map {
+
+   V m_valBegin;
+
+   std::map<K,V> m_map;
+
+public:
+
+   interval_map(V const& val)
+
+   : m_valBegin(val)
+
+   {}
+
+   // Assign value val to interval [keyBegin, keyEnd).
+
+   // Overwrite previous values in this interval.
+
+   // Conforming to the C++ Standard Library conventions, the interval
+
+   // includes keyBegin, but excludes keyEnd.
+
+   // If !( keyBegin < keyEnd ), this designates an empty interval,
+
+   // and assign must do nothing.
+
+    void assign( K const& keyBegin, K const& keyEnd, V const& val ) {
+
+        if(!(keyBegin < keyEnd))
+
+            return;
+
+        auto it = m_map.lower_bound(keyBegin);
+
+        if(!((*it).first < keyEnd) || it == m_map.end())
+
+            return;
+
+        (*it).second = val;
+
+        ++it;
+
+        while(it != m_map.end() && (*it).first < keyEnd) {
+
+            (*it).second = val;
+
+            ++it;
+
+        }  
+
+    }
+
+    V const& operator[]( K const& key ) const {
+
+        auto it=m_map.upper_bound(key);
+
+        if(it==m_map.begin()) {
+
+            return m_valBegin;
+
+        } else {
+
+            return (--it)->second;
+
+        }
+
+    }
+
+    void show() {
+
+        std::cout << "show" << std::endl;
+
+        for(auto entry : m_map) {
+
+           std::cout << entry.first << entry.second << std::endl;
+
+        }
+
+    }
+
+    void test_interval_map() {
+
+       m_map.insert(std::make_pair(1, 'b'));
+
+       m_map.insert(std::make_pair(4, 'c'));
+
+       m_map.insert(std::make_pair(7, 'd'));
+
+       m_map.insert(std::make_pair(10, 'r'));
+
+       m_map.insert(std::make_pair(13, 'z'));
+
+    }
+
+    //a friend function that writes test for map
+
+    friend void IntervalMapTest(interval_map<K,V>);
+
+};
+
+
+void IntervalMapTest(interval_map<unsigned int,char> map){
+
+    std::cout << "In range [3,11) assign value 'Z'" << std::endl;
+
+    map.m_map.clear();
+
+    map.test_interval_map();
+
+    map.assign(3,11,'Z');
+
+    map.show();
+
+    std::cout << "In range [11,13) assign value 'B'" << std::endl;
+
+    map.m_map.clear();
+
+    map.test_interval_map();
+
+    map.assign(11,13,'B');
+
+    map.show();
+
+    std::cout << "In range [5,9) assign value 'D'" << std::endl;
+
+    map.m_map.clear();
+
+    map.test_interval_map();
+
+    map.assign(5,9,'D');
+
+    map.show();
+
+    std::cout << "In range [-3,1) assign value 'E'" << std::endl;
+
+    map.m_map.clear();
+
+    map.test_interval_map();
+
+    map.assign(-3,1,'E');
+
+    map.show();
+
+    std::cout << "In range [0,11) assign value '1', then" << std::endl;
+
+    std::cout << "In range [8,16) assign value '2'" << std::endl;
+
+    map.m_map.clear();
+
+    map.test_interval_map();
+
+    map.assign(0,11,'1');
+
+    map.assign(8,16,'2');
+
+    map.show();
+
+}
+
+int main(){
+
+    interval_map<unsigned int, char> imap{'a'};
+
+    IntervalMapTest(imap);
+
+    return 0;
+
+}
